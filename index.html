@@ -1,0 +1,539 @@
+import React, { useState } from 'react';
+import { 
+  BarChart, 
+  TrendingUp, 
+  Target, 
+  AlertTriangle, 
+  CheckCircle2, 
+  ChevronRight, 
+  ChevronDown, 
+  Plus, 
+  Trash2, 
+  Info,
+  Car,
+  Users,
+  Settings,
+  DollarSign,
+  ClipboardList,
+  Printer
+} from 'lucide-react';
+
+const App = () => {
+  const [activeStep, setActiveStep] = useState('welcome');
+  const [storeData, setStoreData] = useState({
+    name: '',
+    analyst: '',
+    date: new Date().toLocaleDateString('pt-BR')
+  });
+
+  // State for SWOT
+  const [swot, setSwot] = useState({
+    strengths: [],
+    weaknesses: [],
+    opportunities: [],
+    threats: []
+  });
+
+  // State for Ishikawa
+  const [ishikawa, setIshikawa] = useState({
+    metodo: { title: 'Método (Processos)', causes: [] },
+    maoObra: { title: 'Mão de Obra (Pessoas)', causes: [] },
+    maquina: { title: 'Máquina (Tecnologia/Ferramentas)', causes: [] },
+    material: { title: 'Material (Estoque/Preparação)', causes: [] },
+    medida: { title: 'Medida (KPIs/Métricas)', causes: [] },
+    meioAmbiente: { title: 'Ambiente (Loja/Digital)', causes: [] }
+  });
+
+  // State for QFD (Voz do Cliente vs Processos)
+  const [qfd, setQfd] = useState([
+    { id: 1, voc: 'Confiança na Procedência', importance: 5, impact: 0 },
+    { id: 2, voc: 'Rapidez na Resposta', importance: 4, impact: 0 },
+    { id: 3, voc: 'Transparência no Negócio', importance: 5, impact: 0 },
+    { id: 4, voc: 'Qualidade das Fotos/Vídeos', importance: 3, impact: 0 }
+  ]);
+
+  const [fiveWhys, setFiveWhys] = useState(['', '', '', '', '']);
+
+  // Helpers
+  const addSwotItem = (category, value) => {
+    if (!value.trim()) return;
+    setSwot(prev => ({ ...prev, [category]: [...prev[category], value] }));
+  };
+
+  const removeSwotItem = (category, index) => {
+    setSwot(prev => ({
+      ...prev,
+      [category]: prev[category].filter((_, i) => i !== index)
+    }));
+  };
+
+  const addIshikawaCause = (category, value) => {
+    if (!value.trim()) return;
+    setIshikawa(prev => ({
+      ...prev,
+      [category]: { ...prev[category], causes: [...prev[category].causes, value] }
+    }));
+  };
+
+  const steps = [
+    { id: 'welcome', label: 'Início', icon: <Car size={18} /> },
+    { id: 'swot', label: 'SWOT', icon: <TrendingUp size={18} /> },
+    { id: 'ishikawa', label: 'Ishikawa', icon: <Target size={18} /> },
+    { id: 'qfd', label: 'Priorização (QFD)', icon: <BarChart size={18} /> },
+    { id: '5whys', label: 'Causa Raiz', icon: <AlertTriangle size={18} /> },
+    { id: 'report', label: 'Diagnóstico Final', icon: <ClipboardList size={18} /> }
+  ];
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+      {/* Header */}
+      <header className="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-10 print:hidden">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <div className="bg-orange-500 p-2 rounded-lg">
+              <Car className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight">Meu Gerente <span className="text-orange-400">G30</span></h1>
+              <p className="text-xs text-slate-400">Lean Six Sigma para Seminovos</p>
+            </div>
+          </div>
+          <div className="hidden md:flex gap-4">
+            {steps.map((step) => (
+              <button
+                key={step.id}
+                onClick={() => setActiveStep(step.id)}
+                className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                  activeStep === step.id ? 'bg-orange-500 text-white' : 'hover:bg-slate-800'
+                }`}
+              >
+                {step.icon}
+                <span className="ml-1">{step.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto p-4 md:p-8 print:p-0">
+        {/* Progress Mobile */}
+        <div className="md:hidden mb-6 overflow-x-auto flex gap-2 pb-2 print:hidden">
+          {steps.map((step) => (
+            <button
+              key={step.id}
+              onClick={() => setActiveStep(step.id)}
+              className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium ${
+                activeStep === step.id ? 'bg-orange-500 text-white' : 'bg-white border'
+              }`}
+            >
+              {step.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden min-h-[600px] print:shadow-none print:border-none">
+          
+          {/* WELCOME */}
+          {activeStep === 'welcome' && (
+            <div className="p-12 flex flex-col items-center justify-center text-center space-y-6">
+              <div className="w-24 h-24 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center">
+                <Users size={48} />
+              </div>
+              <h2 className="text-3xl font-bold text-slate-800">Nova Consultoria de CS</h2>
+              <p className="max-w-md text-slate-600">
+                Olá Analista! Vamos identificar por que a loja não está performando como deveria. 
+                Siga os pilares da metodologia G30 para um diagnóstico preciso.
+              </p>
+              <div className="w-full max-w-sm space-y-4">
+                <input 
+                  type="text" 
+                  placeholder="Nome da Loja" 
+                  className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                  value={storeData.name}
+                  onChange={(e) => setStoreData({...storeData, name: e.target.value})}
+                />
+                <input 
+                  type="text" 
+                  placeholder="Seu Nome (Analista)" 
+                  className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                  value={storeData.analyst}
+                  onChange={(e) => setStoreData({...storeData, analyst: e.target.value})}
+                />
+                <button 
+                  onClick={() => setActiveStep('swot')}
+                  disabled={!storeData.name}
+                  className="w-full bg-slate-900 text-white p-4 rounded-xl font-bold hover:bg-slate-800 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                >
+                  Começar Diagnóstico <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* SWOT ANALYSIS */}
+          {activeStep === 'swot' && (
+            <div className="p-6 md:p-8">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h2 className="text-2xl font-bold">Análise SWOT Automotiva</h2>
+                  <p className="text-slate-500">Avalie o ambiente interno e externo da loja.</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-bold text-slate-400 uppercase">Pilar G30</span>
+                  <p className="text-sm font-semibold">Visão Macro</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[
+                  { key: 'strengths', label: 'Forças', color: 'border-green-500 bg-green-50', text: 'text-green-700' },
+                  { key: 'weaknesses', label: 'Fraquezas', color: 'border-red-500 bg-red-50', text: 'text-red-700' },
+                  { key: 'opportunities', label: 'Oportunidades', color: 'border-blue-500 bg-blue-50', text: 'text-blue-700' },
+                  { key: 'threats', label: 'Ameaças', color: 'border-orange-500 bg-orange-50', text: 'text-orange-700' }
+                ].map((cat) => (
+                  <div key={cat.key} className={`p-4 border-l-4 rounded-r-xl ${cat.color}`}>
+                    <h3 className={`font-bold mb-3 flex items-center justify-between ${cat.text}`}>
+                      {cat.label}
+                      <Info size={16} className="opacity-50" />
+                    </h3>
+                    <div className="space-y-2 mb-3">
+                      {swot[cat.key].map((item, i) => (
+                        <div key={i} className="flex justify-between items-center bg-white p-2 rounded border text-sm group">
+                          {item}
+                          <button onClick={() => removeSwotItem(cat.key, i)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        placeholder={`Nova ${cat.label.slice(0,-1)}...`}
+                        className="flex-1 text-sm p-2 border rounded outline-none focus:ring-1 focus:ring-slate-400"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            addSwotItem(cat.key, e.target.value);
+                            e.target.value = '';
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 flex justify-end">
+                <button 
+                  onClick={() => setActiveStep('ishikawa')}
+                  className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 transition-all"
+                >
+                  Ir para Ishikawa
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ISHIKAWA (FISHBONE) */}
+          {activeStep === 'ishikawa' && (
+            <div className="p-6 md:p-8">
+               <div className="mb-8">
+                <h2 className="text-2xl font-bold">Diagrama de Ishikawa (G30)</h2>
+                <p className="text-slate-500">Identifique as causas prováveis para o problema central.</p>
+              </div>
+
+              <div className="bg-slate-900 p-4 rounded-xl mb-8 text-white flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-red-500 p-2 rounded-lg"><AlertTriangle size={20}/></div>
+                  <div>
+                    <span className="text-xs text-slate-400 uppercase font-bold">O Problema (Efeito)</span>
+                    <p className="text-lg font-bold">Baixa Performance de Vendas/Conversão</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {Object.keys(ishikawa).map((key) => (
+                  <div key={key} className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-700 border-b pb-2 mb-3 flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                      {ishikawa[key].title}
+                    </h4>
+                    <ul className="space-y-2 mb-4">
+                      {ishikawa[key].causes.map((cause, i) => (
+                        <li key={i} className="text-sm bg-white p-2 rounded border flex items-center gap-2">
+                          <ChevronRight size={12} className="text-orange-500" />
+                          {cause}
+                        </li>
+                      ))}
+                      {ishikawa[key].causes.length === 0 && (
+                        <li className="text-xs text-slate-400 italic">Nenhuma causa listada...</li>
+                      )}
+                    </ul>
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        placeholder="Adicionar causa..."
+                        className="flex-1 text-xs p-2 border rounded outline-none"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            addIshikawaCause(key, e.target.value);
+                            e.target.value = '';
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 flex justify-between">
+                <button onClick={() => setActiveStep('swot')} className="px-6 py-3 font-semibold text-slate-500">Voltar</button>
+                <button 
+                  onClick={() => setActiveStep('qfd')}
+                  className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 transition-all"
+                >
+                  Analisar Impacto (QFD)
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* QFD PRIORITIZATION */}
+          {activeStep === 'qfd' && (
+            <div className="p-6 md:p-8">
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold">Matriz de Priorização (QFD)</h2>
+                <p className="text-slate-500">Avalie o impacto real das falhas na percepção do cliente final.</p>
+              </div>
+
+              <div className="overflow-hidden border rounded-xl shadow-sm">
+                <table className="w-full text-left">
+                  <thead className="bg-slate-50 border-b">
+                    <tr>
+                      <th className="p-4 font-bold text-slate-600">Voz do Cliente (O quê)</th>
+                      <th className="p-4 font-bold text-slate-600 text-center">Importância (1-5)</th>
+                      <th className="p-4 font-bold text-slate-600">Gap Atual (Seu Diagnóstico)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {qfd.map((item, idx) => (
+                      <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-4 font-medium">{item.voc}</td>
+                        <td className="p-4 text-center">
+                          <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-bold">
+                            {item.importance}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex gap-2">
+                            {[1, 2, 3, 4, 5].map((val) => (
+                              <button
+                                key={val}
+                                onClick={() => {
+                                  const newQfd = [...qfd];
+                                  newQfd[idx].impact = val;
+                                  setQfd(newQfd);
+                                }}
+                                className={`w-10 h-10 rounded-lg border flex items-center justify-center font-bold transition-all ${
+                                  item.impact === val ? 'bg-slate-900 text-white border-slate-900' : 'bg-white hover:bg-slate-100'
+                                }`}
+                              >
+                                {val}
+                              </button>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-3">
+                <Info className="text-blue-500 flex-shrink-0 mt-1" />
+                <p className="text-sm text-blue-800">
+                  <strong>Dica de Especialista:</strong> Foque nos itens onde a <strong>Importância</strong> é alta (5) e o <strong>Gap</strong> também é alto. Estes são os pontos de alavancagem para o crescimento da loja de seminovos.
+                </p>
+              </div>
+
+              <div className="mt-8 flex justify-between">
+                <button onClick={() => setActiveStep('ishikawa')} className="px-6 py-3 font-semibold text-slate-500">Voltar</button>
+                <button 
+                  onClick={() => setActiveStep('5whys')}
+                  className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 transition-all"
+                >
+                  Definir Causa Raiz (5 Porquês)
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 5 WHYS ANALYSIS */}
+          {activeStep === '5whys' && (
+            <div className="p-6 md:p-8">
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold">Técnica dos 5 Porquês</h2>
+                <p className="text-slate-500">Escolha a causa mais crítica do Ishikawa e desça até a raiz do desperdício.</p>
+              </div>
+
+              <div className="space-y-4 max-w-2xl mx-auto">
+                <div className="bg-slate-100 p-4 rounded-xl border-l-4 border-slate-400">
+                  <p className="text-xs font-bold uppercase text-slate-500 mb-1">Problema Selecionado</p>
+                  <p className="font-bold text-slate-800">Baixa conversão de leads</p>
+                </div>
+
+                {fiveWhys.map((why, i) => (
+                  <div key={i} className="flex gap-4 items-start">
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold">
+                        {i + 1}
+                      </div>
+                      {i < 4 && <div className="w-0.5 h-12 bg-slate-200"></div>}
+                    </div>
+                    <div className="flex-1 pt-1">
+                      <label className="text-xs font-bold text-slate-400 uppercase">Por que?</label>
+                      <input 
+                        type="text" 
+                        placeholder={i === 0 ? "Ex: Os vendedores demoram para responder" : "Descreva a razão..."}
+                        className="w-full p-3 border-b border-slate-200 outline-none focus:border-orange-500 transition-colors text-lg italic bg-transparent"
+                        value={fiveWhys[i]}
+                        onChange={(e) => {
+                          const newWhys = [...fiveWhys];
+                          newWhys[i] = e.target.value;
+                          setFiveWhys(newWhys);
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-12 flex justify-between">
+                <button onClick={() => setActiveStep('qfd')} className="px-6 py-3 font-semibold text-slate-500">Voltar</button>
+                <button 
+                  onClick={() => setActiveStep('report')}
+                  className="bg-orange-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-600 shadow-lg shadow-orange-200 transition-all"
+                >
+                  Gerar Relatório Final
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* FINAL REPORT */}
+          {activeStep === 'report' && (
+            <div className="p-6 md:p-8">
+               <div className="flex justify-between items-center mb-8 border-b pb-4 print:border-none">
+                <div>
+                  <h2 className="text-2xl font-bold">Diagnóstico Estratégico G30</h2>
+                  <p className="text-slate-500">Loja: <span className="text-slate-900 font-semibold">{storeData.name}</span></p>
+                </div>
+                <div className="text-right text-sm">
+                  <p className="text-slate-400">Data do Diagnóstico</p>
+                  <p className="font-bold">{storeData.date}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Coluna Esquerda: Resumo SWOT */}
+                <div className="space-y-6">
+                  <div className="bg-slate-50 p-4 rounded-xl border">
+                    <h3 className="text-sm font-bold uppercase text-slate-500 mb-3 flex items-center gap-2">
+                      <TrendingUp size={16}/> Resumo SWOT
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-xs font-bold text-red-500 uppercase">Maior Fraqueza</p>
+                        <p className="text-sm">{swot.weaknesses[0] || 'Não informada'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-blue-500 uppercase">Melhor Oportunidade</p>
+                        <p className="text-sm">{swot.opportunities[0] || 'Não informada'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                    <h3 className="text-sm font-bold uppercase text-orange-600 mb-3 flex items-center gap-2">
+                      <AlertTriangle size={16}/> Causa Raiz (The Real Why)
+                    </h3>
+                    <div className="p-3 bg-white rounded-lg border border-orange-200 font-bold text-slate-800 shadow-sm italic">
+                      "{fiveWhys[4] || fiveWhys[0] || 'Causa raiz pendente'}"
+                    </div>
+                  </div>
+                </div>
+
+                {/* Coluna Central/Direita: Plano de Ação sugerido */}
+                <div className="md:col-span-2 space-y-6">
+                  <h3 className="font-bold text-lg flex items-center gap-2">
+                    <CheckCircle2 className="text-green-500" /> Plano de Ação Recomendado (Lean Six Sigma)
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    <div className="flex gap-4 p-4 bg-white border rounded-xl hover:shadow-md transition-shadow">
+                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex flex-shrink-0 items-center justify-center font-bold">M</div>
+                      <div>
+                        <h4 className="font-bold">Ação em Marketing (G30)</h4>
+                        <p className="text-sm text-slate-600">Otimizar o processo de captura de leads e automação de resposta imediata (SLA &lt; 5 min).</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4 p-4 bg-white border rounded-xl hover:shadow-md transition-shadow">
+                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex flex-shrink-0 items-center justify-center font-bold">V</div>
+                      <div>
+                        <h4 className="font-bold">Ação em Vendas</h4>
+                        <p className="text-sm text-slate-600">Treinamento em gatilhos de escassez e autoridade para converter o lead frio em visita na loja.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4 p-4 bg-white border rounded-xl hover:shadow-md transition-shadow">
+                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex flex-shrink-0 items-center justify-center font-bold">O</div>
+                      <div>
+                        <h4 className="font-bold">Ação Operacional</h4>
+                        <p className="text-sm text-slate-600">Implementar a rotina de "Celebração do Cliente" para gerar prova social espontânea.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-6 bg-slate-900 text-white rounded-2xl print:bg-white print:text-black print:border">
+                    <h4 className="font-bold mb-2 flex items-center gap-2 text-orange-400 print:text-black">
+                      <Target size={18} /> Visão do Analista ({storeData.analyst})
+                    </h4>
+                    <p className="text-sm text-slate-300 leading-relaxed print:text-black">
+                      A análise aponta variabilidade no processo de atendimento. O foco imediato deve ser a padronização do "Método de Vendas" para reduzir desperdícios de leads qualificados e aumentar a conversão.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-12 pt-8 border-t flex justify-between print:hidden">
+                <button onClick={() => setActiveStep('5whys')} className="px-6 py-3 font-semibold text-slate-500">Voltar para Edição</button>
+                <div className="flex gap-3">
+                   <button 
+                    onClick={() => window.print()}
+                    className="bg-slate-100 text-slate-700 px-6 py-3 rounded-xl font-bold border hover:bg-slate-200 transition-all flex items-center gap-2"
+                  >
+                    <Printer size={16} /> Imprimir
+                  </button>
+                  <button 
+                    onClick={() => window.location.reload()}
+                    className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 transition-all"
+                  >
+                    Novo Diagnóstico
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+
+      <footer className="max-w-6xl mx-auto p-8 text-center text-slate-400 text-sm print:hidden">
+        <p>© 2024 Metodologia G30 Inteligência Automotiva - Especialista em Lean Six Sigma</p>
+      </footer>
+    </div>
+  );
+};
+
+export default App;
